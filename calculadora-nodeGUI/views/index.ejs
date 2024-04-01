@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora</title>
+    <style>
+        :root {
+            text-align: center;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Calculadora</h1>
+    <div class="container">
+        <button class="botones" value="1">1</button>
+        <button class="botones" value="2">2</button>
+        <button class="botones" value="3">3</button>
+        <button class="botones" value="+">+</button>
+        <button class="botones" value="4">4</button>
+        <button class="botones" value="5">5</button>
+        <button class="botones" value="6">6</button>
+        <button class="botones" value="-">-</button>
+        <button class="botones" value="7">7</button>
+        <button class="botones" value="8">8</button>
+        <button class="botones" value="9">9</button>
+        <button class="botones" value="*">*</button>
+        <button class="botones" id="clear">C</button>
+        <button class="botones" value="0">0</button>
+        <button class="botones" value=".">.</button>
+        <button class="botones" value="/">/</button>
+        <button id="equals">=</button>
+    </div>
+    <div>
+        <input type="text" id="display" readonly>
+    </div>
+    <script>
+        // Limpiar el campo de entrada al presionar una tecla después de mostrar un error
+        document.getElementById('display').addEventListener('keydown', () => {
+            document.getElementById('display').value = '';
+        });
+
+        let isErrorDisplayed = false;
+
+        // Escuchar el evento input para limpiar el campo después de un error
+        const botones = document.getElementsByClassName('botones');
+        Array.from(botones).forEach(boton => {
+            boton.addEventListener('click', () => {
+                console.log("1");
+                if (isErrorDisplayed) {
+                    console.log("2");
+                    document.getElementById('display').value = '';
+                    isErrorDisplayed = false;
+                }
+            });
+        });
+
+        document.getElementById('equals').addEventListener('click', () => {
+            const expression = document.getElementById('display').value;
+            if (expression) {
+                const [num1, operacion, num2] = expression.split(/(\+|\-|\*|\/)/);
+                fetch('/calcular', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `num1=${num1}&num2=${num2}&operacion=${operacion}`
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error al calcular');
+                        }
+                        return response.text();
+                    })
+                    .then(resultado => {
+                        document.getElementById('display').value = resultado;
+                    })
+                    .catch(error => {
+                        console.error('Error al calcular:', error);
+                        document.getElementById('display').value = 'Error';
+                        isErrorDisplayed=true;
+                    });
+            }
+        });
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.getElementById('display').value += button.value;
+            });
+        });
+    </script>
+</body>
+
+</html>
